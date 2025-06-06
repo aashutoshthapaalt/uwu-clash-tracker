@@ -1,7 +1,7 @@
 
-import { Calendar, Clock, Trophy, Users, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Trophy, Users, Sword, Shield, Target } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -11,23 +11,18 @@ const Index = () => {
       <nav className="bg-black/20 backdrop-blur-lg border-b border-purple-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <Zap className="h-8 w-8 text-purple-400" />
+            <Link to="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 UwU eSports
               </span>
-            </div>
+            </Link>
             <div className="hidden md:flex space-x-6">
-              <Link to="/" className="text-gray-300 hover:text-purple-400 transition-colors">Home</Link>
+              <Link to="/" className="text-purple-400">Home</Link>
               <Link to="/matches/scheduled" className="text-gray-300 hover:text-purple-400 transition-colors">Scheduled</Link>
               <Link to="/matches/past" className="text-gray-300 hover:text-purple-400 transition-colors">Past Matches</Link>
               <Link to="/players/stats" className="text-gray-300 hover:text-purple-400 transition-colors">Player Stats</Link>
+              <Link to="/admin" className="text-gray-300 hover:text-purple-400 transition-colors">Admin</Link>
             </div>
-            <Link to="/admin/login">
-              <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white">
-                Admin
-              </Button>
-            </Link>
           </div>
         </div>
       </nav>
@@ -36,101 +31,116 @@ const Index = () => {
       <div className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent">
-                UwU eSports
-              </span>
+            <h1 className="text-6xl font-bold text-white mb-6">
+              UwU eSports
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Elite Clash of Clans clan management system. Track matches, analyze performance, and dominate the battlefield.
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              Elite Clash of Clans clan dedicated to strategic warfare and competitive excellence. 
+              Join our brotherhood of skilled attackers.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/matches/scheduled">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  View Matches
-                </Button>
-              </Link>
-              <Link to="/players/stats">
-                <Button size="lg" variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white px-8 py-3">
-                  <Trophy className="mr-2 h-5 w-5" />
-                  Player Stats
-                </Button>
-              </Link>
+            <div className="flex justify-center space-x-4 mb-12">
+              <Badge className="bg-purple-600 text-white px-4 py-2 text-lg">
+                <Trophy className="h-5 w-5 mr-2" />
+                Champions League
+              </Badge>
+              <Badge className="bg-pink-600 text-white px-4 py-2 text-lg">
+                <Users className="h-5 w-5 mr-2" />
+                50/50 Members
+              </Badge>
             </div>
           </div>
+
+          {/* Stats Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Sword className="h-6 w-6 mr-2 text-purple-400" />
+                  War Record
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-400 mb-2">247-23</div>
+                <p className="text-gray-400">Wins - Losses</p>
+                <div className="text-sm text-purple-300 mt-2">91.5% Win Rate</div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Shield className="h-6 w-6 mr-2 text-purple-400" />
+                  Defense Rating
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-blue-400 mb-2">98.2%</div>
+                <p className="text-gray-400">Average Defense</p>
+                <div className="text-sm text-purple-300 mt-2">Elite Fortress</div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Target className="h-6 w-6 mr-2 text-purple-400" />
+                  Attack Power
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-red-400 mb-2">94.7%</div>
+                <p className="text-gray-400">Average Stars</p>
+                <div className="text-sm text-purple-300 mt-2">Destruction Masters</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Navigation Cards */}
+          <div className="grid md:grid-cols-3 gap-8">
+            <Link to="/matches/scheduled">
+              <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all cursor-pointer group">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center group-hover:text-purple-400 transition-colors">
+                    <Calendar className="h-6 w-6 mr-2" />
+                    Scheduled Matches
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400">View upcoming clan wars and preparation schedules</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/matches/past">
+              <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all cursor-pointer group">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center group-hover:text-purple-400 transition-colors">
+                    <Trophy className="h-6 w-6 mr-2" />
+                    Past Matches
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400">Review match history and performance analytics</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/players/stats">
+              <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all cursor-pointer group">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center group-hover:text-purple-400 transition-colors">
+                    <Users className="h-6 w-6 mr-2" />
+                    Player Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400">Individual player statistics and rankings</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
         </div>
       </div>
-
-      {/* Features Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm">
-            <CardHeader>
-              <Calendar className="h-12 w-12 text-purple-400 mb-4" />
-              <CardTitle className="text-white">Match Scheduling</CardTitle>
-              <CardDescription className="text-gray-400">
-                Never miss a war with our advanced scheduling system and calendar integration.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm">
-            <CardHeader>
-              <Trophy className="h-12 w-12 text-pink-400 mb-4" />
-              <CardTitle className="text-white">Performance Tracking</CardTitle>
-              <CardDescription className="text-gray-400">
-                Detailed analytics for every player's performance across all matches.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm">
-            <CardHeader>
-              <Users className="h-12 w-12 text-purple-400 mb-4" />
-              <CardTitle className="text-white">Clan Management</CardTitle>
-              <CardDescription className="text-gray-400">
-                Comprehensive tools for managing your clan members and their progress.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </div>
-
-      {/* Stats Preview */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-white mb-4">Clan Overview</h2>
-          <p className="text-gray-400">Current season performance</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6 text-center border border-purple-500/20">
-            <div className="text-3xl font-bold text-purple-400 mb-2">24</div>
-            <div className="text-gray-300">Active Players</div>
-          </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6 text-center border border-purple-500/20">
-            <div className="text-3xl font-bold text-green-400 mb-2">18</div>
-            <div className="text-gray-300">Wins</div>
-          </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6 text-center border border-purple-500/20">
-            <div className="text-3xl font-bold text-red-400 mb-2">3</div>
-            <div className="text-gray-300">Losses</div>
-          </div>
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-6 text-center border border-purple-500/20">
-            <div className="text-3xl font-bold text-yellow-400 mb-2">85%</div>
-            <div className="text-gray-300">Win Rate</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-black/40 backdrop-blur-sm border-t border-purple-500/20 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-400">
-            <p>&copy; 2024 UwU eSports. Dominating Clash of Clans since day one.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
