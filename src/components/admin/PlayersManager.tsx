@@ -21,25 +21,35 @@ export const PlayersManager = () => {
   const { data: players, isLoading } = useQuery({
     queryKey: ["admin-players"],
     queryFn: async () => {
+      console.log("Fetching players for admin...");
       const { data, error } = await supabase
         .from("players")
         .select("*")
         .order("created_at", { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching players:", error);
+        throw error;
+      }
+      console.log("Players fetched:", data);
       return data;
     },
   });
 
   const createPlayerMutation = useMutation({
     mutationFn: async (playerData: { name: string; player_tag: string }) => {
+      console.log("Creating player:", playerData);
       const { data, error } = await supabase
         .from("players")
         .insert([playerData])
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating player:", error);
+        throw error;
+      }
+      console.log("Player created:", data);
       return data;
     },
     onSuccess: () => {
@@ -49,10 +59,19 @@ export const PlayersManager = () => {
       setFormData({ name: "", player_tag: "" });
       toast({ title: "Player created successfully!" });
     },
+    onError: (error) => {
+      console.error("Create player mutation error:", error);
+      toast({ 
+        title: "Error creating player", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
   });
 
   const updatePlayerMutation = useMutation({
     mutationFn: async ({ id, ...playerData }: { id: string; name: string; player_tag: string }) => {
+      console.log("Updating player:", { id, ...playerData });
       const { data, error } = await supabase
         .from("players")
         .update(playerData)
@@ -60,7 +79,11 @@ export const PlayersManager = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating player:", error);
+        throw error;
+      }
+      console.log("Player updated:", data);
       return data;
     },
     onSuccess: () => {
@@ -71,26 +94,48 @@ export const PlayersManager = () => {
       setFormData({ name: "", player_tag: "" });
       toast({ title: "Player updated successfully!" });
     },
+    onError: (error) => {
+      console.error("Update player mutation error:", error);
+      toast({ 
+        title: "Error updating player", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
   });
 
   const deletePlayerMutation = useMutation({
     mutationFn: async (id: string) => {
+      console.log("Deleting player:", id);
       const { error } = await supabase
         .from("players")
         .delete()
         .eq("id", id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting player:", error);
+        throw error;
+      }
+      console.log("Player deleted:", id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-players"] });
       queryClient.invalidateQueries({ queryKey: ["player-stats"] });
       toast({ title: "Player deleted successfully!" });
     },
+    onError: (error) => {
+      console.error("Delete player mutation error:", error);
+      toast({ 
+        title: "Error deleting player", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting form:", formData);
     if (editingPlayer) {
       updatePlayerMutation.mutate({ id: editingPlayer.id, ...formData });
     } else {
@@ -99,12 +144,14 @@ export const PlayersManager = () => {
   };
 
   const handleEdit = (player: any) => {
+    console.log("Editing player:", player);
     setEditingPlayer(player);
     setFormData({ name: player.name, player_tag: player.player_tag });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
+    console.log("Delete requested for player:", id);
     if (confirm("Are you sure you want to delete this player?")) {
       deletePlayerMutation.mutate(id);
     }
@@ -159,47 +206,51 @@ export const PlayersManager = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-gray-300">Name</TableHead>
-              <TableHead className="text-gray-300">Player Tag</TableHead>
-              <TableHead className="text-gray-300">Created</TableHead>
-              <TableHead className="text-gray-300">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {players?.map((player) => (
-              <TableRow key={player.id}>
-                <TableCell className="text-white">{player.name}</TableCell>
-                <TableCell className="text-gray-300">{player.player_tag}</TableCell>
-                <TableCell className="text-gray-300">
-                  {new Date(player.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(player)}
-                      className="border-purple-500/20 text-purple-400"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(player.id)}
-                      className="border-red-500/20 text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+        {isLoading ? (
+          <div className="text-white">Loading players...</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-gray-300">Name</TableHead>
+                <TableHead className="text-gray-300">Player Tag</TableHead>
+                <TableHead className="text-gray-300">Created</TableHead>
+                <TableHead className="text-gray-300">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {players?.map((player) => (
+                <TableRow key={player.id}>
+                  <TableCell className="text-white">{player.name}</TableCell>
+                  <TableCell className="text-gray-300">{player.player_tag}</TableCell>
+                  <TableCell className="text-gray-300">
+                    {new Date(player.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(player)}
+                        className="border-purple-500/20 text-purple-400"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(player.id)}
+                        className="border-red-500/20 text-red-400"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );
