@@ -33,6 +33,137 @@ export type Database = {
         }
         Relationships: []
       }
+      match_results: {
+        Row: {
+          created_at: string
+          enemy_percentage: number
+          enemy_stars: number
+          id: string
+          match_date: string
+          opponent_clan_name: string
+          scheduled_match_id: string | null
+          uwu_percentage: number
+          uwu_stars: number
+        }
+        Insert: {
+          created_at?: string
+          enemy_percentage: number
+          enemy_stars: number
+          id?: string
+          match_date?: string
+          opponent_clan_name: string
+          scheduled_match_id?: string | null
+          uwu_percentage: number
+          uwu_stars: number
+        }
+        Update: {
+          created_at?: string
+          enemy_percentage?: number
+          enemy_stars?: number
+          id?: string
+          match_date?: string
+          opponent_clan_name?: string
+          scheduled_match_id?: string | null
+          uwu_percentage?: number
+          uwu_stars?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_results_scheduled_match_id_fkey"
+            columns: ["scheduled_match_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_performances: {
+        Row: {
+          created_at: string
+          destruction_percentage: number
+          id: string
+          match_result_id: string
+          player_id: string
+          stars: number
+        }
+        Insert: {
+          created_at?: string
+          destruction_percentage: number
+          id?: string
+          match_result_id: string
+          player_id: string
+          stars: number
+        }
+        Update: {
+          created_at?: string
+          destruction_percentage?: number
+          id?: string
+          match_result_id?: string
+          player_id?: string
+          stars?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_performances_match_result_id_fkey"
+            columns: ["match_result_id"]
+            isOneToOne: false
+            referencedRelation: "match_results"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_performances_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          player_tag: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          player_tag: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          player_tag?: string
+        }
+        Relationships: []
+      }
+      scheduled_matches: {
+        Row: {
+          created_at: string
+          id: string
+          match_time_utc: string
+          notes: string | null
+          opponent_clan_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_time_utc: string
+          notes?: string | null
+          opponent_clan_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_time_utc?: string
+          notes?: string | null
+          opponent_clan_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

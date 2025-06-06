@@ -4,95 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import { usePlayerStats } from "@/hooks/usePlayerStats";
 
 const PlayerStats = () => {
-  // Mock data - will be replaced with Supabase data
-  const playerStats = [
-    {
-      id: 1,
-      name: "DragonSlayer",
-      player_tag: "#ABC123",
-      monthly: {
-        avg_stars: 2.8,
-        total_matches: 15,
-        three_stars: 12,
-        two_stars: 2,
-        one_star: 1,
-        avg_destruction: 94.2
-      },
-      overall: {
-        avg_stars: 2.7,
-        total_matches: 47,
-        three_stars: 35,
-        two_stars: 8,
-        one_star: 4,
-        avg_destruction: 92.8
-      }
-    },
-    {
-      id: 2,
-      name: "ShadowHunter",
-      player_tag: "#DEF456",
-      monthly: {
-        avg_stars: 2.9,
-        total_matches: 14,
-        three_stars: 13,
-        two_stars: 1,
-        one_star: 0,
-        avg_destruction: 96.1
-      },
-      overall: {
-        avg_stars: 2.8,
-        total_matches: 45,
-        three_stars: 38,
-        two_stars: 5,
-        one_star: 2,
-        avg_destruction: 95.3
-      }
-    },
-    {
-      id: 3,
-      name: "IceQueen",
-      player_tag: "#GHI789",
-      monthly: {
-        avg_stars: 2.6,
-        total_matches: 13,
-        three_stars: 9,
-        two_stars: 3,
-        one_star: 1,
-        avg_destruction: 89.7
-      },
-      overall: {
-        avg_stars: 2.5,
-        total_matches: 42,
-        three_stars: 28,
-        two_stars: 10,
-        one_star: 4,
-        avg_destruction: 88.9
-      }
-    },
-    {
-      id: 4,
-      name: "FireMage",
-      player_tag: "#JKL012",
-      monthly: {
-        avg_stars: 2.7,
-        total_matches: 16,
-        three_stars: 11,
-        two_stars: 4,
-        one_star: 1,
-        avg_destruction: 91.5
-      },
-      overall: {
-        avg_stars: 2.6,
-        total_matches: 49,
-        three_stars: 32,
-        two_stars: 12,
-        one_star: 5,
-        avg_destruction: 90.2
-      }
-    }
-  ];
+  const { data: playerStats, isLoading, error } = usePlayerStats();
 
   const getStarRating = (avgStars: number) => {
     if (avgStars >= 2.8) return { color: "text-green-400", rating: "Excellent" };
@@ -166,6 +81,10 @@ const PlayerStats = () => {
     );
   };
 
+  if (error) {
+    console.error("Error loading player stats:", error);
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Navigation */}
@@ -193,34 +112,44 @@ const PlayerStats = () => {
           <p className="text-gray-400">Performance analytics for all clan members</p>
         </div>
 
-        <Tabs defaultValue="monthly" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-purple-500/20">
-            <TabsTrigger value="monthly" className="data-[state=active]:bg-purple-600">
-              This Month
-            </TabsTrigger>
-            <TabsTrigger value="overall" className="data-[state=active]:bg-purple-600">
-              All Time
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="monthly" className="mt-8">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {playerStats.map((player) => (
-                <PlayerStatsCard key={player.id} player={player} period="monthly" />
-              ))}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="overall" className="mt-8">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {playerStats.map((player) => (
-                <PlayerStatsCard key={player.id} player={player} period="overall" />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="text-white">Loading player statistics...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-red-400">Error loading player stats. Please try again later.</div>
+          </div>
+        ) : (
+          <Tabs defaultValue="monthly" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-black/40 border border-purple-500/20">
+              <TabsTrigger value="monthly" className="data-[state=active]:bg-purple-600">
+                This Month
+              </TabsTrigger>
+              <TabsTrigger value="overall" className="data-[state=active]:bg-purple-600">
+                All Time
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="monthly" className="mt-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {playerStats?.map((player) => (
+                  <PlayerStatsCard key={player.id} player={player} period="monthly" />
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="overall" className="mt-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {playerStats?.map((player) => (
+                  <PlayerStatsCard key={player.id} player={player} period="overall" />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
 
-        {playerStats.length === 0 && (
+        {playerStats?.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-400 mb-2">No player data available</h3>
