@@ -37,10 +37,10 @@ const PastMatches = () => {
               </span>
             </Link>
             <div className="hidden md:flex space-x-6">
-              <Link to="/" className="text-gray-300 hover:text-purple-400 transition-colors">Home</Link>
-              <Link to="/matches/scheduled" className="text-gray-300 hover:text-purple-400 transition-colors">Scheduled</Link>
+              <Link to="/" className="text-gray-300 hover:text-purple-400 transition-colors">Upcoming Matches</Link>
               <Link to="/matches/past" className="text-purple-400">Past Matches</Link>
               <Link to="/players/stats" className="text-gray-300 hover:text-purple-400 transition-colors">Player Stats</Link>
+              <Link to="/admin" className="text-gray-300 hover:text-purple-400 transition-colors">Admin</Link>
             </div>
           </div>
         </div>
