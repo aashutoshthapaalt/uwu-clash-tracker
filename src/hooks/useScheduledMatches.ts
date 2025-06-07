@@ -8,10 +8,13 @@ export const useScheduledMatches = () => {
     queryFn: async () => {
       console.log("Fetching scheduled matches...");
       
-      // First get all scheduled matches
+      // Get all scheduled matches with their associated match results
       const { data: scheduledMatches, error: scheduledError } = await supabase
         .from("scheduled_matches")
-        .select("*")
+        .select(`
+          *,
+          match_results(id)
+        `)
         .order("match_time_utc", { ascending: true });
 
       if (scheduledError) {
@@ -19,20 +22,10 @@ export const useScheduledMatches = () => {
         throw scheduledError;
       }
 
-      // Then get all match results to filter out completed matches
-      const { data: matchResults, error: resultsError } = await supabase
-        .from("match_results")
-        .select("scheduled_match_id")
-        .not("scheduled_match_id", "is", null);
-
-      if (resultsError) {
-        console.error("Error fetching match results:", resultsError);
-        throw resultsError;
-      }
-
       // Filter out scheduled matches that already have results
-      const completedMatchIds = new Set(matchResults.map(result => result.scheduled_match_id));
-      const upcomingMatches = scheduledMatches.filter(match => !completedMatchIds.has(match.id));
+      const upcomingMatches = scheduledMatches.filter(match => 
+        !match.match_results || match.match_results.length === 0
+      );
 
       console.log("Upcoming matches (excluding completed):", upcomingMatches);
       return upcomingMatches;

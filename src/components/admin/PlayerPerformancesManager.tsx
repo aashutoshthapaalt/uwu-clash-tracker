@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,8 +67,31 @@ export const PlayerPerformancesManager = () => {
     },
   });
 
+  // Get available players for the selected match (excluding those who already have performances)
+  const getAvailablePlayersForMatch = () => {
+    if (!formData.match_result_id || !players || !performances) return players;
+    
+    const existingPlayerIds = performances
+      .filter(p => p.match_result_id === formData.match_result_id)
+      .map(p => p.player_id);
+    
+    return players.filter(player => !existingPlayerIds.includes(player.id));
+  };
+
   const createPerformanceMutation = useMutation({
     mutationFn: async (performanceData: any) => {
+      // Check if player already has performance for this match
+      const { data: existingPerformance } = await supabase
+        .from("player_performances")
+        .select("id")
+        .eq("player_id", performanceData.player_id)
+        .eq("match_result_id", performanceData.match_result_id)
+        .single();
+
+      if (existingPerformance) {
+        throw new Error("This player already has a performance recorded for this match");
+      }
+
       const finalData = {
         ...performanceData,
         stars: parseInt(performanceData.stars),
@@ -97,6 +119,13 @@ export const PlayerPerformancesManager = () => {
         destruction_percentage: "",
       });
       toast({ title: "Player performance added successfully!" });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to add player performance",
+        variant: "destructive" 
+      });
     },
   });
 
@@ -200,7 +229,7 @@ export const PlayerPerformancesManager = () => {
                   <Label htmlFor="match_result_id" className="text-white">Match Result (Only completed matches)</Label>
                   <Select 
                     value={formData.match_result_id} 
-                    onValueChange={(value) => setFormData({ ...formData, match_result_id: value })}
+                    onValueChange={(value) => setFormData({ ...formData, match_result_id: value, player_id: "" })}
                     required
                   >
                     <SelectTrigger className="bg-slate-700 border-purple-500/20 text-white">
@@ -217,17 +246,18 @@ export const PlayerPerformancesManager = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="player_id" className="text-white">Player</Label>
+                  <Label htmlFor="player_id" className="text-white">Player (Available only)</Label>
                   <Select 
                     value={formData.player_id} 
                     onValueChange={(value) => setFormData({ ...formData, player_id: value })}
                     required
+                    disabled={!formData.match_result_id}
                   >
                     <SelectTrigger className="bg-slate-700 border-purple-500/20 text-white">
-                      <SelectValue placeholder="Select player" />
+                      <SelectValue placeholder={formData.match_result_id ? "Select available player" : "Select match first"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {players?.map((player) => (
+                      {getAvailablePlayersForMatch()?.map((player) => (
                         <SelectItem key={player.id} value={player.id}>
                           {player.name} ({player.player_tag})
                         </SelectItem>
@@ -279,51 +309,139 @@ export const PlayerPerformancesManager = () => {
             <div className="text-gray-400">No match results available. Add match results first before adding player performances.</div>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-gray-300">Player</TableHead>
-                <TableHead className="text-gray-300">Match</TableHead>
-                <TableHead className="text-gray-300">Stars</TableHead>
-                <TableHead className="text-gray-300">Destruction %</TableHead>
-                <TableHead className="text-gray-300">Date</TableHead>
-                <TableHead className="text-gray-300">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {performances?.map((performance) => (
-                <TableRow key={performance.id}>
-                  <TableCell className="text-white">{performance.players?.name}</TableCell>
-                  <TableCell className="text-white">vs {performance.match_results?.opponent_clan_name}</TableCell>
-                  <TableCell className="text-white">{performance.stars}</TableCell>
-                  <TableCell className="text-white">{performance.destruction_percentage}%</TableCell>
-                  <TableCell className="text-gray-300">
-                    {new Date(performance.match_results?.match_date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(performance)}
-                        className="border-purple-500/20 text-purple-400"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(performance.id)}
-                        className="border-red-500/20 text-red-400"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div>
+            {/* Form Dialog */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="bg-slate-800 border-purple-500/20">
+                <DialogHeader>
+                  <DialogTitle className="text-white">
+                    {editingPerformance ? "Edit Player Performance" : "Add Player Performance"}
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="match_result_id" className="text-white">Match Result (Only completed matches)</Label>
+                    <Select 
+                      value={formData.match_result_id} 
+                      onValueChange={(value) => setFormData({ ...formData, match_result_id: value, player_id: "" })}
+                      required
+                    >
+                      <SelectTrigger className="bg-slate-700 border-purple-500/20 text-white">
+                        <SelectValue placeholder="Select completed match" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {matchResults?.map((result) => (
+                          <SelectItem key={result.id} value={result.id}>
+                            vs {result.opponent_clan_name} - {new Date(result.match_date).toLocaleDateString()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="player_id" className="text-white">Player (Available only)</Label>
+                    <Select 
+                      value={formData.player_id} 
+                      onValueChange={(value) => setFormData({ ...formData, player_id: value })}
+                      required
+                      disabled={!formData.match_result_id}
+                    >
+                      <SelectTrigger className="bg-slate-700 border-purple-500/20 text-white">
+                        <SelectValue placeholder={formData.match_result_id ? "Select available player" : "Select match first"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getAvailablePlayersForMatch()?.map((player) => (
+                          <SelectItem key={player.id} value={player.id}>
+                            {player.name} ({player.player_tag})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="stars" className="text-white">Stars (1-3)</Label>
+                    <Input
+                      id="stars"
+                      type="number"
+                      min="1"
+                      max="3"
+                      value={formData.stars}
+                      onChange={(e) => setFormData({ ...formData, stars: e.target.value })}
+                      required
+                      className="bg-slate-700 border-purple-500/20 text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="destruction_percentage" className="text-white">Destruction Percentage</Label>
+                    <Input
+                      id="destruction_percentage"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      value={formData.destruction_percentage}
+                      onChange={(e) => setFormData({ ...formData, destruction_percentage: e.target.value })}
+                      required
+                      className="bg-slate-700 border-purple-500/20 text-white"
+                    />
+                  </div>
+                  
+                  <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                    {editingPerformance ? "Update Performance" : "Add Performance"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-gray-300">Player</TableHead>
+                  <TableHead className="text-gray-300">Match</TableHead>
+                  <TableHead className="text-gray-300">Stars</TableHead>
+                  <TableHead className="text-gray-300">Destruction %</TableHead>
+                  <TableHead className="text-gray-300">Date</TableHead>
+                  <TableHead className="text-gray-300">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {performances?.map((performance) => (
+                  <TableRow key={performance.id}>
+                    <TableCell className="text-white">{performance.players?.name}</TableCell>
+                    <TableCell className="text-white">vs {performance.match_results?.opponent_clan_name}</TableCell>
+                    <TableCell className="text-white">{performance.stars}</TableCell>
+                    <TableCell className="text-white">{performance.destruction_percentage}%</TableCell>
+                    <TableCell className="text-gray-300">
+                      {new Date(performance.match_results?.match_date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(performance)}
+                          className="border-purple-500/20 text-purple-400"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(performance.id)}
+                          className="border-red-500/20 text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

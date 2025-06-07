@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,16 +26,22 @@ export const MatchResultsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Only fetch scheduled matches that don't have results yet
   const { data: scheduledMatches } = useQuery({
     queryKey: ["scheduled-matches-for-results"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("scheduled_matches")
-        .select("*")
+        .select(`
+          *,
+          match_results(id)
+        `)
         .order("match_time_utc", { ascending: false });
       
       if (error) throw error;
-      return data;
+      
+      // Filter out matches that already have results
+      return data.filter(match => !match.match_results || match.match_results.length === 0);
     },
   });
 
@@ -197,13 +202,13 @@ export const MatchResultsManager = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="scheduled_match_id" className="text-white">Link to Scheduled Match (Optional)</Label>
+                    <Label htmlFor="scheduled_match_id" className="text-white">Link to Scheduled Match (Available only)</Label>
                     <Select 
                       value={formData.scheduled_match_id} 
                       onValueChange={(value) => setFormData({ ...formData, scheduled_match_id: value })}
                     >
                       <SelectTrigger className="bg-slate-700 border-purple-500/20 text-white">
-                        <SelectValue placeholder="Select scheduled match" />
+                        <SelectValue placeholder="Select available scheduled match" />
                       </SelectTrigger>
                       <SelectContent>
                         {scheduledMatches?.map((match) => (

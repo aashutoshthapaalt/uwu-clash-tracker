@@ -28,7 +28,10 @@ export const ScheduledMatchesManager = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("scheduled_matches")
-        .select("*")
+        .select(`
+          *,
+          match_results(id)
+        `)
         .order("match_time_utc", { ascending: true });
       
       if (error) throw error;
@@ -183,40 +186,53 @@ export const ScheduledMatchesManager = () => {
             <TableRow>
               <TableHead className="text-gray-300">Opponent</TableHead>
               <TableHead className="text-gray-300">Match Time</TableHead>
+              <TableHead className="text-gray-300">Status</TableHead>
               <TableHead className="text-gray-300">Notes</TableHead>
               <TableHead className="text-gray-300">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {matches?.map((match) => (
-              <TableRow key={match.id}>
-                <TableCell className="text-white">{match.opponent_clan_name}</TableCell>
-                <TableCell className="text-gray-300">
-                  {new Date(match.match_time_utc).toLocaleString()}
-                </TableCell>
-                <TableCell className="text-gray-300">{match.notes || "No notes"}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(match)}
-                      className="border-purple-500/20 text-purple-400"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(match.id)}
-                      className="border-red-500/20 text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {matches?.map((match) => {
+              const hasResult = match.match_results && match.match_results.length > 0;
+              return (
+                <TableRow key={match.id}>
+                  <TableCell className="text-white">{match.opponent_clan_name}</TableCell>
+                  <TableCell className="text-gray-300">
+                    {new Date(match.match_time_utc).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    {hasResult ? (
+                      <Badge className="bg-green-600 text-white">Completed</Badge>
+                    ) : (
+                      <Badge className="bg-yellow-600 text-white">Scheduled</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-gray-300">{match.notes || "No notes"}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(match)}
+                        disabled={hasResult}
+                        className="border-purple-500/20 text-purple-400 disabled:opacity-50"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(match.id)}
+                        disabled={hasResult}
+                        className="border-red-500/20 text-red-400 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>
