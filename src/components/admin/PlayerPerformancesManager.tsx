@@ -59,7 +59,7 @@ export const PlayerPerformancesManager = () => {
         .select(`
           *,
           players(name),
-          match_results(opponent_clan_name, match_date)
+          match_results!player_performances_match_result_id_fkey(opponent_clan_name, match_date)
         `)
         .order("created_at", { ascending: false });
       

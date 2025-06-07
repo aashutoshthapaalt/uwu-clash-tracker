@@ -14,7 +14,7 @@ export const usePlayerStats = () => {
           player_performances (
             stars,
             destruction_percentage,
-            match_results (
+            match_results!player_performances_match_result_id_fkey (
               match_date
             )
           )
@@ -72,7 +72,8 @@ export const usePlayerStats = () => {
           name: player.name,
           player_tag: player.player_tag,
           monthly: calculateStats(monthlyPerformances),
-          overall: calculateStats(performances)
+          overall: calculateStats(performances),
+          player_performances: performances
         };
       });
 

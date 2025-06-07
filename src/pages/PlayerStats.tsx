@@ -1,3 +1,4 @@
+
 import { Trophy, Target, Star, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { usePlayerStats } from "@/hooks/usePlayerStats";
+import { PlayerDetailModal } from "@/components/PlayerDetailModal";
 import { useState } from "react";
 
 const PlayerStats = () => {
