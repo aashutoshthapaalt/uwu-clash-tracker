@@ -10,6 +10,8 @@ import { useState } from "react";
 const PlayerStats = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
+  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { data: playerStats, isLoading, error } = usePlayerStats();
 
@@ -60,12 +62,20 @@ const PlayerStats = () => {
     return calculateStats(monthlyPerformances);
   };
 
+  const handlePlayerClick = (player: any) => {
+    setSelectedPlayer(player);
+    setIsModalOpen(true);
+  };
+
   const PlayerStatsCard = ({ player, period, customStats }: { player: any, period: 'monthly' | 'overall' | 'custom', customStats?: any }) => {
     const stats = customStats || player[period];
     const { color, rating } = getStarRating(stats.avg_stars);
     
     return (
-      <Card className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all">
+      <Card 
+        className="bg-black/40 border-purple-500/20 backdrop-blur-sm hover:border-purple-400/40 transition-all cursor-pointer"
+        onClick={() => handlePlayerClick(player)}
+      >
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
@@ -171,7 +181,7 @@ const PlayerStats = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">Player Statistics</h1>
-          <p className="text-gray-400">Performance analytics for all clan members</p>
+          <p className="text-gray-400">Performance analytics for all clan members. Click on a player card for detailed stats.</p>
         </div>
 
         {isLoading ? (
@@ -183,83 +193,92 @@ const PlayerStats = () => {
             <div className="text-red-400">Error loading player stats. Please try again later.</div>
           </div>
         ) : (
-          <Tabs defaultValue="monthly" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-black/40 border border-purple-500/20">
-              <TabsTrigger value="monthly" className="data-[state=active]:bg-purple-600">
-                This Month
-              </TabsTrigger>
-              <TabsTrigger value="custom" className="data-[state=active]:bg-purple-600">
-                Custom Month
-              </TabsTrigger>
-              <TabsTrigger value="overall" className="data-[state=active]:bg-purple-600">
-                All Time
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="monthly" className="mt-8">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {playerStats?.map((player) => (
-                  <PlayerStatsCard key={player.id} player={player} period="monthly" />
-                ))}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="custom" className="mt-8">
-              <div className="mb-6 flex gap-4 items-center">
-                <div>
-                  <label className="text-white text-sm mb-2 block">Year</label>
-                  <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger className="w-32 bg-black/40 border-purple-500/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {years.map((year) => (
-                        <SelectItem key={year} value={year.toString()}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <>
+            <Tabs defaultValue="monthly" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-black/40 border border-purple-500/20">
+                <TabsTrigger value="monthly" className="data-[state=active]:bg-purple-600">
+                  This Month
+                </TabsTrigger>
+                <TabsTrigger value="custom" className="data-[state=active]:bg-purple-600">
+                  Custom Month
+                </TabsTrigger>
+                <TabsTrigger value="overall" className="data-[state=active]:bg-purple-600">
+                  All Time
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="monthly" className="mt-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {playerStats?.map((player) => (
+                    <PlayerStatsCard key={player.id} player={player} period="monthly" />
+                  ))}
                 </div>
-                <div>
-                  <label className="text-white text-sm mb-2 block">Month</label>
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-40 bg-black/40 border-purple-500/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {months.map((month) => (
-                        <SelectItem key={month.value} value={month.value}>
-                          {month.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              </TabsContent>
+              
+              <TabsContent value="custom" className="mt-8">
+                <div className="mb-6 flex gap-4 items-center">
+                  <div>
+                    <label className="text-white text-sm mb-2 block">Year</label>
+                    <Select value={selectedYear} onValueChange={setSelectedYear}>
+                      <SelectTrigger className="w-32 bg-black/40 border-purple-500/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-white text-sm mb-2 block">Month</label>
+                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                      <SelectTrigger className="w-40 bg-black/40 border-purple-500/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {months.map((month) => (
+                          <SelectItem key={month.value} value={month.value}>
+                            {month.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {playerStats?.map((player) => {
-                  const customStats = getMonthStats(player, parseInt(selectedYear), parseInt(selectedMonth));
-                  return (
-                    <PlayerStatsCard 
-                      key={player.id} 
-                      player={player} 
-                      period="custom" 
-                      customStats={customStats}
-                    />
-                  );
-                })}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="overall" className="mt-8">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {playerStats?.map((player) => (
-                  <PlayerStatsCard key={player.id} player={player} period="overall" />
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {playerStats?.map((player) => {
+                    const customStats = getMonthStats(player, parseInt(selectedYear), parseInt(selectedMonth));
+                    return (
+                      <PlayerStatsCard 
+                        key={player.id} 
+                        player={player} 
+                        period="custom" 
+                        customStats={customStats}
+                      />
+                    );
+                  })}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="overall" className="mt-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {playerStats?.map((player) => (
+                    <PlayerStatsCard key={player.id} player={player} period="overall" />
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* Player Detail Modal */}
+            <PlayerDetailModal 
+              player={selectedPlayer}
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
+          </>
         )}
 
         {playerStats?.length === 0 && !isLoading && (

@@ -69,6 +69,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_match_results_scheduled_match"
+            columns: ["scheduled_match_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_matches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "match_results_scheduled_match_id_fkey"
             columns: ["scheduled_match_id"]
             isOneToOne: false
@@ -103,6 +110,13 @@ export type Database = {
           stars?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_player_performances_match_result"
+            columns: ["match_result_id"]
+            isOneToOne: false
+            referencedRelation: "match_results"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "player_performances_match_result_id_fkey"
             columns: ["match_result_id"]

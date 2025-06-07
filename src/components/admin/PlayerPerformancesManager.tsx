@@ -24,6 +24,7 @@ export const PlayerPerformancesManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Only fetch match results (not scheduled matches) since performances can only be added for completed matches
   const { data: matchResults } = useQuery({
     queryKey: ["match-results-for-performances"],
     queryFn: async () => {
@@ -196,14 +197,14 @@ export const PlayerPerformancesManager = () => {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="match_result_id" className="text-white">Match Result</Label>
+                  <Label htmlFor="match_result_id" className="text-white">Match Result (Only completed matches)</Label>
                   <Select 
                     value={formData.match_result_id} 
                     onValueChange={(value) => setFormData({ ...formData, match_result_id: value })}
                     required
                   >
                     <SelectTrigger className="bg-slate-700 border-purple-500/20 text-white">
-                      <SelectValue placeholder="Select match result" />
+                      <SelectValue placeholder="Select completed match" />
                     </SelectTrigger>
                     <SelectContent>
                       {matchResults?.map((result) => (
@@ -273,51 +274,57 @@ export const PlayerPerformancesManager = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-gray-300">Player</TableHead>
-              <TableHead className="text-gray-300">Match</TableHead>
-              <TableHead className="text-gray-300">Stars</TableHead>
-              <TableHead className="text-gray-300">Destruction %</TableHead>
-              <TableHead className="text-gray-300">Date</TableHead>
-              <TableHead className="text-gray-300">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {performances?.map((performance) => (
-              <TableRow key={performance.id}>
-                <TableCell className="text-white">{performance.players?.name}</TableCell>
-                <TableCell className="text-white">vs {performance.match_results?.opponent_clan_name}</TableCell>
-                <TableCell className="text-white">{performance.stars}</TableCell>
-                <TableCell className="text-white">{performance.destruction_percentage}%</TableCell>
-                <TableCell className="text-gray-300">
-                  {new Date(performance.match_results?.match_date).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(performance)}
-                      className="border-purple-500/20 text-purple-400"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(performance.id)}
-                      className="border-red-500/20 text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+        {matchResults?.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-gray-400">No match results available. Add match results first before adding player performances.</div>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-gray-300">Player</TableHead>
+                <TableHead className="text-gray-300">Match</TableHead>
+                <TableHead className="text-gray-300">Stars</TableHead>
+                <TableHead className="text-gray-300">Destruction %</TableHead>
+                <TableHead className="text-gray-300">Date</TableHead>
+                <TableHead className="text-gray-300">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {performances?.map((performance) => (
+                <TableRow key={performance.id}>
+                  <TableCell className="text-white">{performance.players?.name}</TableCell>
+                  <TableCell className="text-white">vs {performance.match_results?.opponent_clan_name}</TableCell>
+                  <TableCell className="text-white">{performance.stars}</TableCell>
+                  <TableCell className="text-white">{performance.destruction_percentage}%</TableCell>
+                  <TableCell className="text-gray-300">
+                    {new Date(performance.match_results?.match_date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(performance)}
+                        className="border-purple-500/20 text-purple-400"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(performance.id)}
+                        className="border-red-500/20 text-red-400"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );
